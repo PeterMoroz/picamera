@@ -1,0 +1,13 @@
+[Unit]
+Description=Camera Autostart on Boot
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /home/pi/camera/services/camera/camera-pizero.py
+WorkingDirectory=/home/pi/camera/services/camera/
+Restart=always
+StandardOutput=inherit
+StandardError=inherit
+
+[Install]
+WantedBy=multi-user.target

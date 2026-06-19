@@ -1,0 +1,13 @@
+[Unit]
+Description=Gallery application Autostart on Boot
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /home/pi/camera/services/gallery/run.py
+WorkingDirectory=/home/pi/camera/services/gallery
+Restart=always
+StandardOutput=inherit
+StandardError=inherit
+
+[Install]
+WantedBy=multi-user.target

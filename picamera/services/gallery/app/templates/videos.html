@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Videos{% endblock %}
+{% block stylesheets %}
+    {{ super() }}
+{% endblock %}
+{% block content %}
+    <div class="row">
+        {% for video in videos %}
+            <div class="col-md-4">
+                <div class="card mb-4 shadow-sm">
+                    <video class="card-video" alt="{{ video['filename'] }}" controls>
+                        <source src="{{ url_for('main.send_video', filename=video['filename']) }}" type="video/mp4">
+                        Your brouser does not support the video tag.
+                    </video>
+                    <div class="card-body">
+                        <p class="card-text">{{ video['filename'] }}</p>
+                        <p class="card-text"><small class="text-muted">Shoot time {{ video['shoot_time'] }}</small></p>
+                        <form action="{{ url_for('main.delete_video', filename=video['filename']) }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                        <a href="{{ url_for('main.rename_video', filename=video['filename']) }}" class="btn btn-primary btn-sm">Rename</a>
+                        <a href="{{ url_for('main.download_video', filename=video['filename']) }}" class="btn btn-success btn-sm">Download</a>
+                    </div>                    
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+{% endblock %}
