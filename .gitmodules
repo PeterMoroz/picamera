@@ -1,0 +1,3 @@
+[submodule "camera-pizero"]
+	path = camera-pizero
+	url = https://github.com/arijitsadhu/camera-pizero.git
