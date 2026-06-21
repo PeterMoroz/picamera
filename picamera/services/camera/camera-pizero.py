@@ -13,7 +13,7 @@ bstate = BSTATE_RELEASED
 
 # TO DO: handle all possible exceptions
 
-button = Button(13, hold_time=2)
+button = Button(13, bounce_time=0.25)
 camera = PiCamera()
 video_filename = None
 
@@ -62,6 +62,7 @@ def main():
     global camera
     camera.resolution = (1280, 720)
     camera.framerate = 25
+    camera.rotation = 180
     camera.start_preview()
 
     global button
