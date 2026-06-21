@@ -1,7 +1,9 @@
 from picamera import PiCamera
 from gpiozero import Button
+from PIL import Image
 
 import time
+import glob
 import os
 import subprocess
 
@@ -22,12 +24,12 @@ PHOTOS_DIRECTORY = CAMERA_DIRECTORY + '/photos'
 VIDEOS_DIRECTORY = CAMERA_DIRECTORY + '/videos'
 
 def on_pressed(btn):
-    print("button {btn} is pressed")
+    print('button {} is pressed'.format(btn))
     global bstate
     bstate = BSTATE_PRESSED
 
 def on_held(btn):
-    print("button {btn} is held")
+    print('button {} is held'.format(btn))
     global bstate
     bstate = BSTATE_HELD
     global video_filename
@@ -37,7 +39,7 @@ def on_held(btn):
     print("-- start recording {}".format(video_filename))
 
 def on_released(btn):
-    print("button {btn} is released")
+    print('button {} is released'.format(btn))
     global bstate
     global camera
     if bstate == BSTATE_HELD:
@@ -52,13 +54,17 @@ def on_released(btn):
         filepath = os.path.join(PHOTOS_DIRECTORY, filename)
         camera.capture(filepath)
         print("-- capture image {}".format(filename))
+        (path, extension) = os.path.splitext(filepath)
+        small_img_path = path + '_small' + extension
+        img = Image.open(filepath)
+        small_img = img.resize((320, 180))
+        small_img.save(small_img_path)
+
     bstate = BSTATE_RELEASED
 
 
 
 def main():
-    #button = Button(13)
-    #camera = PiCamera()
     global camera
     camera.resolution = (1280, 720)
     camera.framerate = 25
@@ -71,30 +77,22 @@ def main():
     button.when_released = on_released
 
     while True:
-        # time.sleep(1)
-
-        #button.wait_for_press()
-        #filename = time.strftime("%Y%m%d-%H%M%S") + ".jpg"
-        #camera.capture(filename)
-
         total_time = 0.0
-        for root, _, files in os.walk(VIDEOS_DIRECTORY):
-            for filename in files:
-                if filename.endswith('h264'):
-                    fullpath = os.path.join(root, filename)
-                    name, _ = os.path.splitext(filename)
-                    t0 = time.time()
-                    subprocess.call(['/usr/bin/ffmpeg', '-r', '30', '-i', fullpath, '-vcodec', 'copy', os.path.join(root, '{}.mp4'.format(name))])
-                    t1 = time.time()
-                    os.remove(fullpath)
-                    total_time += (t1 - t0)
-        if total_time < 1.0:
+        h264_files = glob.glob(VIDEOS_DIRECTORY + '/*.h264')
+        t0 = time.time()
+        for file in h264_files:
+            (prefix, _) = os.path.splitext(file)
+            dst_file = prefix + '.mp4'
+            subprocess.call(['/usr/bin/ffmpeg', '-r', '30', '-i', file, '-vcodec', 'copy', dst_file])
+            # the duration of resizing is too long
+            # dst_file = prefix + '_small.mp4'
+            # subprocess.call(['/usr/bin/ffmpeg', '-i', file, '-vf', 'scale=320:180', '-c:v', 'libx264', '-c:a', 'copy', dst_file])
+            os.remove(file)
+        t1 = time.time()
+        dt = t1 - t0
+        if dt < 1.0:
             time.sleep(1.0)
 
 
-    #camera.start_recording('video.mp4', format='h264')
-    #time.sleep(30)
-    #camera.stop_recording()
-        
 if __name__ == '__main__':
     main()
